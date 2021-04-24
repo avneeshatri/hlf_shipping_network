@@ -1,0 +1,95 @@
+#Seller
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+export FABRIC_CFG_PATH=/home/atri/workspace_hlf/shipping-network/organizations/button.seller/conf
+export CORE_PEER_MSPCONFIGPATH=/home/atri/workspace_hlf/shipping-network/organizations/button.seller/organization/peerOrganizations/seller.ledzeppelin.com/users/Admin@seller.ledzeppelin.com/msp
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="SellerMSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/button.seller/organization/peerOrganizations/seller.ledzeppelin.com/peers/peer0.seller.ledzeppelin.com/tls/ca.crt
+export CORE_PEER_ADDRESS=localhost:7251
+
+
+
+export CHANNEL_NAME=shippingchannel
+export ORDERER_CA=/home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/msp/tlscacerts/tlsca.pinkflyod.com-cert.pem
+export CHAINCODE_NAME=shipping
+
+export SHIPPING_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/shipping/organization/peerOrganizations/shipping.acdc.com/peers/peer0.shipping.acdc.com/tls/ca.crt
+export SHIPPING_PEER_ADDRESS=localhost:7051
+
+export CUSTOM_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/custom/organization/peerOrganizations/custom.metallica.gov/peers/peer0.custom.metallica.gov/tls/ca.crt
+export CUSTOM_PEER_ADDRESS=localhost:7151
+
+
+export BUYER_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/tls/ca.crt
+export BUYER_PEER_ADDRESS=localhost:7351
+
+#Buyer
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+export FABRIC_CFG_PATH=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/conf
+
+export CORE_PEER_MSPCONFIGPATH=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/users/Admin@buyer.gunsnroses.com/msp
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="BuyerMSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/tls/ca.crt
+export CORE_PEER_ADDRESS=localhost:7351
+
+
+export CHANNEL_NAME=shippingchannel
+export ORDERER_CA=/home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/msp/tlscacerts/tlsca.pinkflyod.com-cert.pem
+export CHAINCODE_NAME=shipping
+
+export SHIPPING_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/shipping/organization/peerOrganizations/shipping.acdc.com/peers/peer0.shipping.acdc.com/tls/ca.crt
+export SHIPPING_PEER_ADDRESS=localhost:7051
+
+export CUSTOM_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/custom/organization/peerOrganizations/custom.metallica.gov/peers/peer0.custom.metallica.gov/tls/ca.crt
+export CUSTOM_PEER_ADDRESS=localhost:7151
+
+
+
+
+
+# Create Asset 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+export ASSET_PROPERTIES=$(echo -n "{\"objectType\":\"asset\",\"id\":\"button3\",\"unit\":\"100pcs\",\"currency\":\"USD\",\"appraisedValue\":11}" | base64 | tr -d \\n)
+peer chaincode invoke -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME --peerAddresses $SHIPPING_PEER_ADDRESS --tlsRootCertFiles $SHIPPING_PEER_TLS_ROOTCERT_FILE --peerAddresses $CUSTOM_PEER_ADDRESS --tlsRootCertFiles $CUSTOM_PEER_TLS_ROOTCERT_FILE --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE  -c '{"Args":["CreateAsset","{\"id\":\"button3\",\"status\":\"FOR_SALE\",\"properties\" :{\"color\":\"red\",\"size\":\"5mm\",\"shape\":\"round\"} , \"owner\":\"SellerMSP\"}"]}' --transient "{\"asset_properties\":\"$ASSET_PROPERTIES\"}" --waitForEvent
+
+# Query Asset
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+peer chaincode query -C $CHANNEL_NAME -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","button3"]}'
+
+
+
+#Update
+#++++++++++++++++++++++++++++++++++++
+
+
+export ASSET_PROPERTIES=$(echo -n "{\"objectType\":\"asset\",\"id\":\"button3\",\"unit\":\"100pcs\",\"currency\":\"USD\",\"appraisedValue\":11}" | base64 | tr -d \\n)
+peer chaincode invoke -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME --peerAddresses $SHIPPING_PEER_ADDRESS --tlsRootCertFiles $SHIPPING_PEER_TLS_ROOTCERT_FILE --peerAddresses $CUSTOM_PEER_ADDRESS --tlsRootCertFiles $CUSTOM_PEER_TLS_ROOTCERT_FILE --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE  -c '{"Args":["UpdateAsset","{\"id\":\"button3\",\"status\":\"FOR_SALE\",\"properties\" :{\"color\":\"red\",\"size\":\"3mm\",\"shape\":\"round\"} , \"owner\":\"SellerMSP\"}"]}' --transient "{\"asset_properties\":\"$ASSET_PROPERTIES\"}" --waitForEvent
+
+
+Agree To Sell
+--------------------
+export AGREEMENT=$(echo -n "{\"aggreementId\":\"agreement101\",\"assetId\":\"button3\",\"sellerId\":\"SellerMSP\",\"buyerId\":\"BuyerMSP\",\"price\":10000.00}" | base64 | tr -d \\n)
+peer chaincode invoke -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME --peerAddresses $SHIPPING_PEER_ADDRESS --tlsRootCertFiles $SHIPPING_PEER_TLS_ROOTCERT_FILE --peerAddresses $CUSTOM_PEER_ADDRESS --tlsRootCertFiles $CUSTOM_PEER_TLS_ROOTCERT_FILE --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE  -c '{"Args":["AgreeToSell","button3"]}' --transient "{\"asset_price\":\"$AGREEMENT\"}" --waitForEvent
+
+Agree To Buy
+-------------------
+export AGREEMENT=$(echo -n "{\"aggreementId\":\"agreement101\",\"assetId\":\"button3\",\"sellerId\":\"SellerMSP\",\"buyerId\":\"BuyerMSP\",\"price\":10000.00}" | base64 | tr -d \\n)
+peer chaincode invoke -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME --peerAddresses $SHIPPING_PEER_ADDRESS --tlsRootCertFiles $SHIPPING_PEER_TLS_ROOTCERT_FILE --peerAddresses $CUSTOM_PEER_ADDRESS --tlsRootCertFiles $CUSTOM_PEER_TLS_ROOTCERT_FILE --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE  -c '{"Args":["AgreeToBuy","button3"]}' --transient "{\"asset_price\":\"$AGREEMENT\"}" --waitForEvent
+
+TransferAsset
+-----------------------
+
+export BUYER_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/tls/ca.crt
+export BUYER_PEER_ADDRESS=localhost:7351
+
+
+export AGREEMENT=$(echo -n "{\"aggreementId\":\"agreement101\",\"assetId\":\"button3\",\"sellerId\":\"SellerMSP\",\"buyerId\":\"BuyerMSP\",\"price\":10000.00}" | base64 | tr -d \\n)
+export ASSET_PROPERTIES=$(echo -n "{\"objectType\":\"asset\",\"id\":\"button3\",\"unit\":\"100pcs\",\"currency\":\"USD\",\"appraisedValue\":11}" | base64 | tr -d \\n)
+peer chaincode invoke -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME --peerAddresses $SHIPPING_PEER_ADDRESS --tlsRootCertFiles $SHIPPING_PEER_TLS_ROOTCERT_FILE --peerAddresses $BUYER_PEER_ADDRESS --tlsRootCertFiles $BUYER_PEER_TLS_ROOTCERT_FILE --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE  -c '{"Args":["TransferAsset","button3","BuyerMSP"]}' --transient "{\"asset_price\":\"$AGREEMENT\",\"asset_properties\":\"$ASSET_PROPERTIES\"}" --waitForEvent
+
+
+
+
+
