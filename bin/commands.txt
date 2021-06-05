@@ -20,9 +20,6 @@ export CUSTOM_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/o
 export CUSTOM_PEER_ADDRESS=localhost:7151
 
 
-export BUYER_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/tls/ca.crt
-export BUYER_PEER_ADDRESS=localhost:7351
-
 #Buyer
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 export FABRIC_CFG_PATH=/home/atri/workspace_hlf/shipping-network/organizations/button.buyer/conf
