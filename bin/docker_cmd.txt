@@ -7,7 +7,7 @@ sudo  docker network ls
 sudo docker network inspect 67459cfe7c52
 sudo docker network disconnect 67459cfe7c52 42a0b2b8b2207d5ef17bdd7e1dd10b4861e43024912cebe9a1365e3d9a643b8e
 
-
+sudo docker container prune
 
 
 configtxgen -inspectBlock /home/atri/workspace_hlf/shipping-network/organizations/network/system-genesis-block/genesis.block

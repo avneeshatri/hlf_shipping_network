@@ -47,7 +47,7 @@ if [[ $1 == "down" ]];then
 fi
 
 #1.2 Create Genesis Block and Update policy 
---------------------------------------------------------
+#--------------------------------------------------------
 
 #Create genesis block
 echo "Create genesis block"
@@ -164,6 +164,7 @@ fi
 
 #1.5 Submit Channel transaction To orderer
 #--------------------------------------------
+sleep 10s
 echo "Submitting channel transaction"
 
 export CHANNEL_NAME=shippingchannel
@@ -188,7 +189,7 @@ fi
 
 #1.6 Join Channel
 #-------------------
-
+sleep 20s
 #1.6.1 Join Custom
 #------------------
 echo "Joining Custom to channel"
@@ -451,3 +452,4 @@ if [[ $rc -ne 0 ]];then
 	exit 1
 fi
 
+echo "Setup completed successfully"
