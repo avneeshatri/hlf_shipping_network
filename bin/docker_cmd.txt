@@ -1,3 +1,54 @@
+
+docker ps 
+docker ps -a
+
+docker images
+
+docker run -d <imagename>
+
+
+sudo docker port static-site
+
+sudo docker exec -i -t 7164caa16a9f /bin/sh
+docker exec -it <container name> <command>
+
+
+AWS LOGIN
+ssh -i /home/atri/Downloads/elastic-beanstalk.pem ec2-user@ec2-35-167-50-18.us-west-2.compute.amazonaws.com
+
+Commands
+-----------------
+
+docker build -t friendlyhello .  # Create image using this directory's Dockerfile
+docker run -p 4000:80 friendlyhello  # Run "friendlyname" mapping port 4000 to 80
+docker run -d -p 4000:80 friendlyhello         # Same thing, but in detached mode
+docker container ls                                # List all running containers
+docker container ls -a             # List all containers, even those not running
+docker container stop <hash>           # Gracefully stop the specified container
+docker container kill <hash>         # Force shutdown of the specified container
+docker container rm <hash>        # Remove specified container from this machine
+docker container rm $(docker container ls -a -q)         # Remove all containers
+docker image ls -a                             # List all images on this machine
+docker image rm <image id>            # Remove specified image from this machine
+docker image rm $(docker image ls -a -q)   # Remove all images from this machine
+docker login             # Log in this CLI session using your Docker credentials
+docker tag <image> username/repository:tag  # Tag <image> for upload to registry
+docker push username/repository:tag            # Upload tagged image to registry
+docker run username/repository:tag  
+
+docker tag local-image:tagname new-repo:tagname
+docker push new-repo:tagname
+
+docker tag local-image:tagname new-repo:tagname
+docker push new-repo:tagname 
+
+docker tag hyperledger/fabric-peer:2.2.3 avneeshatri/fabric-peer:2.2.3-pkcs11
+
+docker push avneeshatri/fabric-peer:2.2.3-pkcs11
+
+
+sudo docker pull avneeshatri/fabric-peer:2.2.3-pkcs11
+
 ERROR: network net_shipping id 87c5b97305c97fe3ef4cbc90a223a5c519718610522ab7d2d3ff23762b170ace has active endpoints
 Terminating process
 

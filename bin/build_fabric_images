@@ -1,0 +1,57 @@
+cd /home/atri/go/src/github.com/hyperledger/fabric
+cd vagrant/
+vargrant up
+vagrant ssh
+
+vagrant destroy
+
+make fabric-ca-server
+make fabric-ca-client
+make docker
+
+docker tag hyperledger/fabric-ca:1.5.1 avneeshatri/fabric-ca:1.5.1-pkcs11
+
+docker login
+username : avneeshatri
+password: blackcrow
+
+docker push avneeshatri/fabric-ca:1.5.1-pkcs11
+
+sudo docker pull avneeshatri/fabric-ca:1.5.1-pkcs11
+
+
+-------------------------------------------------------
+export SOFTHSM2_CONF=/etc/softhsm2.conf
+export PAH=$PATH:/home/atri/go/src/github.com/hyperledger/fabric-ca/bin
+
+--------------------------------------------------------
+
+# Copyright IBM Corp All Rights Reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# This vagrantfile creates a VM that is capable of building and testing
+# the fabric core.
+
+Vagrant.require_version ">= 1.7.4"
+Vagrant.configure('2') do |config|
+  config.vm.box = "ubuntu/bionic64"
+  config.vm.synced_folder "..", "/home/vagrant/fabric"
+  config.ssh.forward_agent = true
+
+  config.vm.provider :virtualbox do |vb|
+    vb.name = "hyperledger"
+    vb.cpus = 2
+    vb.memory = 4096
+  end
+
+  config.vm.provision :shell, name: "essentials", path: "essentials.sh"
+  config.vm.provision :shell, name: "docker", path: "docker.sh"
+  config.vm.provision :shell, name: "golang", path: "golang.sh"
+  config.vm.provision :shell, name: "limits", path: "limits.sh"
+  config.vm.provision :shell, name: "softhsm", path: "softhsm.sh"
+  config.vm.provision :shell, name: "user", privileged: false, path: "user.sh"
+end
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :

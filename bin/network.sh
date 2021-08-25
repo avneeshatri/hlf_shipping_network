@@ -61,11 +61,26 @@ function generateCrypto() {
 		return $rc
 	fi
 	./setupWithCA.sh "custom.metallica.gov" "/home/atri/workspace_hlf/shipping-network/organizations/custom" "ca-custom" "7154"
-        rc=$?
-        if [[ $rc -ne 0 ]];then
+     rc=$?
+     if [[ $rc -ne 0 ]];then
                 echo "Custom CA Setup Failed"
                 return $rc
-        fi
+     fi
+
+	./setupWithCA.sh "seller.ledzeppelin.com" "/home/atri/workspace_hlf/shipping-network/organizations/button.seller" "ca-seller" "7254"
+	rc=$?
+	if [[ $rc -ne 0 ]];then
+		echo "Seller CA Setup Failed"
+		return $rc
+	fi   
+	
+	
+	./setupWithCA.sh "buyer.gunsnroses.com" "/home/atri/workspace_hlf/shipping-network/organizations/button.buyer" "ca-buyer" "7354"
+	rc=$?
+	if [[ $rc -ne 0 ]];then
+		echo "Buyer CA Setup Failed"
+		return $rc
+	fi  
 }
 
 function bringUpFabricCA() {

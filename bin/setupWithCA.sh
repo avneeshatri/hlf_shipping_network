@@ -45,7 +45,7 @@ function initSetup() {
 
 
 function register() {
-      echo "################################### Register Shipping ###############################"
+      echo "################################### Register Users(Peer/User/Admin) ###############################"
  
       mkdir -p $FABRIC_CA_CLIENT_HOME
 	
