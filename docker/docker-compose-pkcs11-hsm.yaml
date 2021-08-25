@@ -1,0 +1,211 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  orderer.pinkflyod.com:
+  peer0.shipping.acdc.com:
+  peer0.custom.metallica.gov:
+  peer0.seller.ledzeppelin.com:
+  peer0.buyer.gunsnroses.com:
+
+networks:
+  shipping:
+
+services:
+
+  orderer.pinkflyod.com:
+    container_name: orderer.pinkflyod.com
+    image: hyperledger/fabric-orderer:$IMAGE_TAG
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=8051
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+        - /home/atri/workspace_hlf/shipping-network/organizations/network/system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - /home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/msp:/var/hyperledger/orderer/msp
+        - /home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/tls/:/var/hyperledger/orderer/tls
+        - orderer.pinkflyod.com:/var/hyperledger/production/orderer
+    ports:
+      - 8051:8051
+    networks:
+      - shipping
+
+  peer0.shipping.acdc.com:
+    container_name: peer0.shipping.acdc.com
+    image: avneeshatri/fabric-peer:pkcs11
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_shipping
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.shipping.acdc.com
+      - CORE_PEER_ADDRESS=peer0.shipping.acdc.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.shipping.acdc.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.shipping.acdc.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.shipping.acdc.com:7051
+      - CORE_PEER_LOCALMSPID=ShippingMSP
+      - CORE_PEER_BCCSP_DEFAULT=PKCS11
+      - CORE_PEER_BCCSP_PKCS11_LIBRARY=/etc/hyperledger/fabric/libsofthsm2.so
+      - CORE_PEER_BCCSP_PKCS11_PIN=1857
+      - CORE_PEER_BCCSP_PKCS11_LABEL=fabric
+      - SOFTHSM2_CONF=/etc/hyperledger/fabric/config.file
+    volumes:
+        - /var/run/:/host/var/run/
+        - /home/atri/workspace_hlf/shipping-network/organizations/shipping/organization/peerOrganizations/shipping.acdc.com/peers/peer0.shipping.acdc.com/msp:/etc/hyperledger/fabric/msp
+        - /home/atri/workspace_hlf/shipping-network/organizations/shipping/organization/peerOrganizations/shipping.acdc.com/peers/peer0.shipping.acdc.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.shipping.acdc.com:/var/hyperledger/production
+        - /home/atri/workspace_hlf/shipping-network/organizations/shipping/conf/softhsm.cfg:/etc/hyperledger/fabric/config.file
+        - /usr/local/lib/softhsm/libsofthsm2.so:/etc/hyperledger/fabric/libsofthsm2.so
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7051:7051
+    networks:
+      - shipping
+
+  peer0.custom.metallica.gov:
+    container_name: peer0.custom.metallica.gov
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_shipping
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.custom.metallica.gov
+      - CORE_PEER_ADDRESS=peer0.custom.metallica.gov:7151
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7151
+      - CORE_PEER_CHAINCODEADDRESS=peer0.custom.metallica.gov:7152
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7152
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.custom.metallica.gov:7151
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.custom.metallica.gov:7151
+      - CORE_PEER_LOCALMSPID=CustomMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - /home/atri/workspace_hlf/shipping-network/organizations/custom/organization/peerOrganizations/custom.metallica.gov/peers/peer0.custom.metallica.gov/msp:/etc/hyperledger/fabric/msp
+        - /home/atri/workspace_hlf/shipping-network/organizations/custom/organization/peerOrganizations/custom.metallica.gov/peers/peer0.custom.metallica.gov/tls:/etc/hyperledger/fabric/tls
+        - peer0.custom.metallica.gov:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7151:7151
+    networks:
+      - shipping
+
+  peer0.seller.ledzeppelin.com:
+    container_name: peer0.seller.ledzeppelin.com
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_shipping
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.seller.ledzeppelin.com
+      - CORE_PEER_ADDRESS=peer0.seller.ledzeppelin.com:7251
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7251
+      - CORE_PEER_CHAINCODEADDRESS=peer0.seller.ledzeppelin.com:7252
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7252
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.seller.ledzeppelin.com:7251
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.seller.ledzeppelin.com:7251
+      - CORE_PEER_LOCALMSPID=SellerMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - /home/atri/workspace_hlf/shipping-network/organizations/button.seller/organization/peerOrganizations/seller.ledzeppelin.com/peers/peer0.seller.ledzeppelin.com/msp:/etc/hyperledger/fabric/msp
+        - /home/atri/workspace_hlf/shipping-network/organizations/button.seller/organization/peerOrganizations/seller.ledzeppelin.com/peers/peer0.seller.ledzeppelin.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.seller.ledzeppelin.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7251:7251
+    networks:
+      - shipping
+
+  peer0.buyer.gunsnroses.com:
+    container_name: peer0.buyer.gunsnroses.com
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_shipping
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.buyer.gunsnroses.com
+      - CORE_PEER_ADDRESS=peer0.buyer.gunsnroses.com:7351
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7351
+      - CORE_PEER_CHAINCODEADDRESS=peer0.buyer.gunsnroses.com:7352
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7352
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.buyer.gunsnroses.com:7351
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.buyer.gunsnroses.com:7351
+      - CORE_PEER_LOCALMSPID=BuyerMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - /home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/msp:/etc/hyperledger/fabric/msp
+        - /home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.buyer.gunsnroses.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7351:7351
+    networks:
+      - shipping
+      
