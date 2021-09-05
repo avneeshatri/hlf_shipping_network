@@ -55,8 +55,8 @@ Terminating process
 Fix
 +++
 sudo  docker network ls
-sudo docker network inspect 67459cfe7c52
-sudo docker network disconnect 67459cfe7c52 42a0b2b8b2207d5ef17bdd7e1dd10b4861e43024912cebe9a1365e3d9a643b8e
+sudo docker network inspect 4db2cbad085a
+sudo docker network disconnect 4db2cbad085a 7ff5dedeb9a3f526a6ec03a971521d260e6e47f9ccf4f04b6d1c2f2b091f1260
 
 sudo docker container prune
 

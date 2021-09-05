@@ -42,7 +42,7 @@ function bringDownFabricCA() {
 
                 CA_IMAGETAG="latest"
                 COMPOSE_FILE_CA=/home/atri/workspace_hlf/shipping-network/docker/docker-compose-ca.yaml
-                IMAGE_TAG=${CA_IMAGETAG} sudo docker-compose -f $COMPOSE_FILE_CA down 2>&1
+                IMAGE_TAG=${CA_IMAGETAG} sudo docker-compose -f $COMPOSE_FILE_CA down --volumes --remove-orphans 2>&1
 
                 CONTAINER_IDS=$(sudo docker ps -a | awk '($2 ~ /fabric-ca.*/) {print $1}')
                 if [ -z "$CONTAINER_IDS" -o "$CONTAINER_IDS" == " " ]; then

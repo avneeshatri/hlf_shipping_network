@@ -1,0 +1,60 @@
+export FABRIC_CFG_PATH=/home/atri/workspace_hlf/shipping-network/organizations/orderer/conf
+export ORDERER_CA=/home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/msp/tlscacerts/tlsca.pinkflyod.com-cert.pem
+
+export CORE_PEER_MSPCONFIGPATH=/home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/users/Admin@pinkflyod.com/msp
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="OrdererMSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=/home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/tls/ca.crt
+export CORE_PEER_ADDRESS=localhost:8051
+
+
+#++++++ Fetch config +++++++++++++++
+peer channel fetch config  /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config_block.pb -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com -c system-channel --tls --cafile /home/atri/workspace_hlf/shipping-network/organizations/orderer/organization/ordererOrganizations/pinkflyod.com/orderers/orderer.pinkflyod.com/msp/tlscacerts/tlsca.pinkflyod.com-cert.pem
+
+#+++++++++++++++ convert to json +++++++++++++++++++++++
+configtxlator proto_decode --input /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config_block.pb --type common.Block --output /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config_block.json
+
+
+
+jq .data.data[0].payload.data.config /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config_block.json > /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config.json
+
+#++++++++++++++++++ Add new Org ++++++++++++++++++++++++++++++++++++
+org_config=$(cat $ORG_BASE_DIR/organization/peerOrganizations/$ORG_DOMAIN/$ORG_NAME.json)
+
+
+cat /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config.json | jq .channel_group.groups.Consortiums.groups.SampleConsortium.groups.GuptaButtonsMSP="${org_config}" > /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_modified_config.json
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+#translate *_config.json back into a protobuf called config.pb
+
+
+configtxlator proto_encode --input /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config.json --type common.Config --output /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config.pb
+
+
+#encode modified_config.json to modified_config.pb
+
+configtxlator proto_encode --input /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_modified_config.json --type common.Config --output /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_modified_config.pb
+
+
+#configtxlator to calculate the delta between these two config protobufs
+
+configtxlator compute_update --channel_id system-channel --original /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_config.pb --updated /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_modified_config.pb --output /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update.pb
+
+
+#Decode this object into editable JSON format and call it 
+
+configtxlator proto_decode --input /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update.pb --type common.ConfigUpdate --output /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update.json
+
+#wrap in an envelope message
+
+echo '{"payload":{"header":{"channel_header":{"channel_id":"system-channel", "type":2}},"data":{"config_update":'$(cat /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update.json)'}}}' | jq . > /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update_in_envelope.json
+
+
+# convert it into the fully fledged protobuf format that Fabric requires
+configtxlator proto_encode --input /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update_in_envelope.json --type common.Envelope --output /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update_in_envelope.pb
+
+peer channel update -f /home/atri/workspace_hlf/shipping-network/organizations/network/staging/system_channel_update_in_envelope.pb -c system-channel -o localhost:8051 --ordererTLSHostnameOverride orderer.pinkflyod.com  --tls --cafile ${ORDERER_CA}
