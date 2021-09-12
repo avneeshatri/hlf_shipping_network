@@ -1,0 +1,25 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+networks:
+  test:
+
+services:
+
+  go_alpine:
+    image: golang:1.15.7-alpine3.12
+    tty: true
+    environment:
+      - GOROOT=/usr/local/go
+    entrypoint: ["tail","-f","/dev/null"]
+    command: mkdir /home/atri && cd /home/atri/ && wget https://golang.org/dl/go1.15.7.linux-amd64.tar.gz
+    volumes:
+      - /home/atri/workspace_hlf/shipping-network/plugin:/tmp
+      - /home/atri/go/src:/go/src
+    container_name: go_alpine
+    networks:
+      - test
+

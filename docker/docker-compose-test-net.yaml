@@ -80,6 +80,8 @@ services:
         - /var/run/:/host/var/run/
         - /home/atri/workspace_hlf/shipping-network/organizations/shipping/organization/peerOrganizations/shipping.acdc.com/peers/peer0.shipping.acdc.com/msp:/etc/hyperledger/fabric/msp
         - /home/atri/workspace_hlf/shipping-network/organizations/shipping/organization/peerOrganizations/shipping.acdc.com/peers/peer0.shipping.acdc.com/tls:/etc/hyperledger/fabric/tls
+        - /home/atri/workspace_hlf/shipping-network/plugins:/etc/hyperledger/fabric/plugins
+        - /home/atri/workspace_hlf/shipping-network/core/core.yaml:/etc/hyperledger/fabric/core.yaml
         - peer0.shipping.acdc.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
@@ -118,6 +120,8 @@ services:
         - /var/run/:/host/var/run/
         - /home/atri/workspace_hlf/shipping-network/organizations/custom/organization/peerOrganizations/custom.metallica.gov/peers/peer0.custom.metallica.gov/msp:/etc/hyperledger/fabric/msp
         - /home/atri/workspace_hlf/shipping-network/organizations/custom/organization/peerOrganizations/custom.metallica.gov/peers/peer0.custom.metallica.gov/tls:/etc/hyperledger/fabric/tls
+        - /home/atri/workspace_hlf/shipping-network/plugins:/etc/hyperledger/fabric/plugins
+        - /home/atri/workspace_hlf/shipping-network/core/core.yaml:/etc/hyperledger/fabric/core.yaml
         - peer0.custom.metallica.gov:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
@@ -128,7 +132,7 @@ services:
 
   peer0.seller.ledzeppelin.com:
     container_name: peer0.seller.ledzeppelin.com
-    image: hyperledger/fabric-peer:$IMAGE_TAG
+    image: avneeshatri/fabric-peer:2.2.3
     environment:
       #Generic peer variables
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
@@ -156,6 +160,8 @@ services:
         - /var/run/:/host/var/run/
         - /home/atri/workspace_hlf/shipping-network/organizations/button.seller/organization/peerOrganizations/seller.ledzeppelin.com/peers/peer0.seller.ledzeppelin.com/msp:/etc/hyperledger/fabric/msp
         - /home/atri/workspace_hlf/shipping-network/organizations/button.seller/organization/peerOrganizations/seller.ledzeppelin.com/peers/peer0.seller.ledzeppelin.com/tls:/etc/hyperledger/fabric/tls
+        - /home/atri/workspace_hlf/shipping-network/plugins:/etc/hyperledger/fabric/plugins
+        - /home/atri/workspace_hlf/shipping-network/core/core.yaml:/etc/hyperledger/fabric/core.yaml
         - peer0.seller.ledzeppelin.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
@@ -194,6 +200,8 @@ services:
         - /var/run/:/host/var/run/
         - /home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/msp:/etc/hyperledger/fabric/msp
         - /home/atri/workspace_hlf/shipping-network/organizations/button.buyer/organization/peerOrganizations/buyer.gunsnroses.com/peers/peer0.buyer.gunsnroses.com/tls:/etc/hyperledger/fabric/tls
+        - /home/atri/workspace_hlf/shipping-network/plugins:/etc/hyperledger/fabric/plugins
+        - /home/atri/workspace_hlf/shipping-network/core/core.yaml:/etc/hyperledger/fabric/core.yaml
         - peer0.buyer.gunsnroses.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start

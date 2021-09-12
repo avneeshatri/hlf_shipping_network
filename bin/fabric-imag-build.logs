@@ -1,0 +1,217 @@
+Building Docker image hyperledger/fabric-peer
+docker build --force-rm  -f images/peer/Dockerfile \
+	--build-arg GO_VER=1.15.7 \
+	--build-arg ALPINE_VER=3.12 \
+	--build-arg GO_TAGS= \
+	-t hyperledger/fabric-peer ./
+Sending build context to Docker daemon  43.91MB
+Step 1/21 : ARG GO_VER
+Step 2/21 : ARG ALPINE_VER
+Step 3/21 : FROM alpine:${ALPINE_VER} as peer-base
+ ---> 48b8ec4ed9eb
+Step 4/21 : RUN apk add --no-cache tzdata
+ ---> Using cache
+ ---> 24a303bfdd0e
+Step 5/21 : RUN echo 'hosts: files dns' > /etc/nsswitch.conf
+ ---> Running in cbed47789a93
+Removing intermediate container cbed47789a93
+ ---> 7140a9053d3d
+Step 6/21 : FROM golang:${GO_VER}-alpine${ALPINE_VER} as golang
+ ---> 0a3d3a0d9a0b
+Step 7/21 : RUN apk add --no-cache 	bash 	gcc 	git 	make 	musl-dev
+ ---> Running in 0505afef0b8f
+fetch http://dl-cdn.alpinelinux.org/alpine/v3.12/main/x86_64/APKINDEX.tar.gz
+fetch http://dl-cdn.alpinelinux.org/alpine/v3.12/community/x86_64/APKINDEX.tar.gz
+(1/22) Installing ncurses-terminfo-base (6.2_p20200523-r0)
+(2/22) Installing ncurses-libs (6.2_p20200523-r0)
+(3/22) Installing readline (8.0.4-r0)
+(4/22) Installing bash (5.0.17-r0)
+Executing bash-5.0.17-r0.post-install
+(5/22) Installing libgcc (9.3.0-r2)
+(6/22) Installing libstdc++ (9.3.0-r2)
+(7/22) Installing binutils (2.34-r2)
+(8/22) Installing gmp (6.2.0-r0)
+(9/22) Installing isl (0.18-r0)
+(10/22) Installing libgomp (9.3.0-r2)
+(11/22) Installing libatomic (9.3.0-r2)
+(12/22) Installing libgphobos (9.3.0-r2)
+(13/22) Installing mpfr4 (4.0.2-r4)
+(14/22) Installing mpc1 (1.1.0-r1)
+(15/22) Installing gcc (9.3.0-r2)
+(16/22) Installing nghttp2-libs (1.41.0-r0)
+(17/22) Installing libcurl (7.78.0-r0)
+(18/22) Installing expat (2.2.9-r1)
+(19/22) Installing pcre2 (10.35-r0)
+(20/22) Installing git (2.26.3-r0)
+(21/22) Installing make (4.3-r0)
+(22/22) Installing musl-dev (1.1.24-r10)
+Executing busybox-1.31.1-r19.trigger
+OK: 159 MiB in 37 packages
+Removing intermediate container 0505afef0b8f
+ ---> f87569d5ba55
+Step 8/21 : ADD . $GOPATH/src/github.com/hyperledger/fabric
+ ---> c6c34c521d33
+Step 9/21 : WORKDIR $GOPATH/src/github.com/hyperledger/fabric
+ ---> Running in 41cf6f569a3a
+Removing intermediate container 41cf6f569a3a
+ ---> dd1894ff1f46
+Step 10/21 : FROM golang as peer
+ ---> dd1894ff1f46
+Step 11/21 : ARG GO_TAGS
+ ---> Running in 6fff9e7b9fb6
+Removing intermediate container 6fff9e7b9fb6
+ ---> 584fef364212
+Step 12/21 : RUN make peer GO_TAGS=${GO_TAGS}
+ ---> Running in cd32ffba7780
+Building build/bin/peer
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/peer
+Removing intermediate container cd32ffba7780
+ ---> 589f7699e146
+Step 13/21 : FROM peer-base
+ ---> 7140a9053d3d
+Step 14/21 : ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
+ ---> Running in 1ff4b1cd4d93
+Removing intermediate container 1ff4b1cd4d93
+ ---> 69769c638a51
+Step 15/21 : VOLUME /etc/hyperledger/fabric
+ ---> Running in 90bafcb5908f
+Removing intermediate container 90bafcb5908f
+ ---> 489ffd052733
+Step 16/21 : VOLUME /var/hyperledger
+ ---> Running in d58dd0c0e0a4
+Removing intermediate container d58dd0c0e0a4
+ ---> 206210177c7d
+Step 17/21 : COPY --from=peer /go/src/github.com/hyperledger/fabric/build/bin /usr/local/bin
+ ---> 14e9d964f0f7
+Step 18/21 : COPY --from=peer /go/src/github.com/hyperledger/fabric/sampleconfig/msp ${FABRIC_CFG_PATH}/msp
+ ---> fb24b4271651
+Step 19/21 : COPY --from=peer /go/src/github.com/hyperledger/fabric/sampleconfig/core.yaml ${FABRIC_CFG_PATH}
+ ---> 6ff7f21460c9
+Step 20/21 : EXPOSE 7051
+ ---> Running in f671ed05931d
+Removing intermediate container f671ed05931d
+ ---> dd4cc3afef71
+Step 21/21 : CMD ["peer","node","start"]
+ ---> Running in efc1a310541f
+Removing intermediate container efc1a310541f
+ ---> 0bac7c06aa32
+Successfully built 0bac7c06aa32
+Successfully tagged hyperledger/fabric-peer:latest
+docker tag hyperledger/fabric-peer hyperledger/fabric-peer:2.2.3
+docker tag hyperledger/fabric-peer hyperledger/fabric-peer:2.2
+docker tag hyperledger/fabric-peer hyperledger/fabric-peer:amd64-2.2.3-snapshot-8fd2ad8c6
+Building Docker image hyperledger/fabric-tools
+docker build --force-rm  -f images/tools/Dockerfile \
+	--build-arg GO_VER=1.15.7 \
+	--build-arg ALPINE_VER=3.12 \
+	 \
+	-t hyperledger/fabric-tools ./
+Sending build context to Docker daemon  43.91MB
+Step 1/14 : ARG GO_VER
+Step 2/14 : ARG ALPINE_VER
+Step 3/14 : FROM golang:${GO_VER}-alpine${ALPINE_VER} as golang
+ ---> 0a3d3a0d9a0b
+Step 4/14 : RUN apk add --no-cache 	bash 	gcc 	git 	make 	musl-dev;
+ ---> Running in addb52d86ce4
+fetch http://dl-cdn.alpinelinux.org/alpine/v3.12/main/x86_64/APKINDEX.tar.gz
+fetch http://dl-cdn.alpinelinux.org/alpine/v3.12/community/x86_64/APKINDEX.tar.gz
+(1/22) Installing ncurses-terminfo-base (6.2_p20200523-r0)
+(2/22) Installing ncurses-libs (6.2_p20200523-r0)
+(3/22) Installing readline (8.0.4-r0)
+(4/22) Installing bash (5.0.17-r0)
+Executing bash-5.0.17-r0.post-install
+(5/22) Installing libgcc (9.3.0-r2)
+(6/22) Installing libstdc++ (9.3.0-r2)
+(7/22) Installing binutils (2.34-r2)
+(8/22) Installing gmp (6.2.0-r0)
+(9/22) Installing isl (0.18-r0)
+(10/22) Installing libgomp (9.3.0-r2)
+(11/22) Installing libatomic (9.3.0-r2)
+(12/22) Installing libgphobos (9.3.0-r2)
+(13/22) Installing mpfr4 (4.0.2-r4)
+(14/22) Installing mpc1 (1.1.0-r1)
+(15/22) Installing gcc (9.3.0-r2)
+(16/22) Installing nghttp2-libs (1.41.0-r0)
+(17/22) Installing libcurl (7.78.0-r0)
+(18/22) Installing expat (2.2.9-r1)
+(19/22) Installing pcre2 (10.35-r0)
+(20/22) Installing git (2.26.3-r0)
+(21/22) Installing make (4.3-r0)
+(22/22) Installing musl-dev (1.1.24-r10)
+Executing busybox-1.31.1-r19.trigger
+OK: 159 MiB in 37 packages
+Removing intermediate container addb52d86ce4
+ ---> 665e38460c5c
+Step 5/14 : ADD . $GOPATH/src/github.com/hyperledger/fabric
+ ---> 3e509cee0bd9
+Step 6/14 : WORKDIR $GOPATH/src/github.com/hyperledger/fabric
+ ---> Running in bc559b21abaa
+Removing intermediate container bc559b21abaa
+ ---> 196ed1e8d8b0
+Step 7/14 : FROM golang as tools
+ ---> 196ed1e8d8b0
+Step 8/14 : RUN make configtxgen configtxlator cryptogen peer discover idemixgen
+ ---> Running in aef985f25d2c
+Building build/bin/configtxgen
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/configtxgen
+Building build/bin/configtxlator
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/configtxlator
+Building build/bin/cryptogen
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/cryptogen
+Building build/bin/peer
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/peer
+Building build/bin/discover
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/discover
+Building build/bin/idemixgen
+GOBIN=/go/src/github.com/hyperledger/fabric/build/bin go install -tags "" -ldflags "-X github.com/hyperledger/fabric/common/metadata.Version=2.2.3 -X github.com/hyperledger/fabric/common/metadata.CommitSHA=8fd2ad8 -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger" github.com/hyperledger/fabric/cmd/idemixgen
+Removing intermediate container aef985f25d2c
+ ---> 51e788a9b86c
+Step 9/14 : FROM golang:${GO_VER}-alpine
+1.15.7-alpine: Pulling from library/golang
+4c0d98bf9879: Pull complete 
+9e181322f1e7: Pull complete 
+6422294da7d3: Pull complete 
+8b36f00a8e74: Pull complete 
+5e5ebcc3e852: Pull complete 
+Digest: sha256:dbda4e47937a3abb515c386d955002be5116d060c90d936127cc24ac439c815c
+Status: Downloaded newer image for golang:1.15.7-alpine
+ ---> 54d042506068
+Step 10/14 : RUN apk add --no-cache 	bash 	git 	jq 	tzdata;
+ ---> Running in ae0159e19329
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.13/main/x86_64/APKINDEX.tar.gz
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.13/community/x86_64/APKINDEX.tar.gz
+(1/13) Installing ncurses-terminfo-base (6.2_p20210109-r0)
+(2/13) Installing ncurses-libs (6.2_p20210109-r0)
+(3/13) Installing readline (8.1.0-r0)
+(4/13) Installing bash (5.1.0-r0)
+Executing bash-5.1.0-r0.post-install
+(5/13) Installing brotli-libs (1.0.9-r3)
+(6/13) Installing nghttp2-libs (1.42.0-r1)
+(7/13) Installing libcurl (7.78.0-r0)
+(8/13) Installing expat (2.2.10-r1)
+(9/13) Installing pcre2 (10.36-r0)
+(10/13) Installing git (2.30.2-r0)
+(11/13) Installing oniguruma (6.9.6-r0)
+(12/13) Installing jq (1.6-r1)
+(13/13) Installing tzdata (2021a-r0)
+Executing busybox-1.32.1-r2.trigger
+OK: 25 MiB in 28 packages
+Removing intermediate container ae0159e19329
+ ---> e8427fd8eb3e
+Step 11/14 : ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
+ ---> Running in a62271b98335
+Removing intermediate container a62271b98335
+ ---> dfecceba00e9
+Step 12/14 : VOLUME /etc/hyperledger/fabric
+ ---> Running in e676a6bb9a2f
+Removing intermediate container e676a6bb9a2f
+ ---> 800b31ba251f
+Step 13/14 : COPY --from=tools /go/src/github.com/hyperledger/fabric/build/bin /usr/local/bin
+ ---> ad5b8de4b437
+Step 14/14 : COPY --from=tools /go/src/github.com/hyperledger/fabric/sampleconfig ${FABRIC_CFG_PATH}
+ ---> 5983a202f32b
+Successfully built 5983a202f32b
+Successfully tagged hyperledger/fabric-tools:latest
+docker tag hyperledger/fabric-tools hyperledger/fabric-tools:2.2.3
+docker tag hyperledger/fabric-tools hyperledger/fabric-tools:2.2
+docker tag hyperledger/fabric-tools hyperledger/fabric-tools:amd64-2.2.3-snapshot-8fd2ad8c6
